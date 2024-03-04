@@ -30,6 +30,28 @@ function onSubmit(e) {
 
     fetchIcon(query)
         .then(data => {
+            if (data.hits.length === 0) {
+                iziToast.error({
+                    message: 'Sorry, there are no images matching your search query. Please try again!',
+                    messageColor: '#FFFFFF',
+                    backgroundColor: '#B51B1B',
+                    position: 'center',
+                });
+                loader.style.display = "none";
+                form.reset();
+           
+            
+             
+        } else if(!query.trim()){
+            iziToast.error({
+                message: 'Заповніть це поле!',
+                messageColor: '#FFFFFF',
+                backgroundColor: '#B51B1B',
+                position: 'topRight',
+            });
+            loader.style.display = "none";
+        }
+        else {
             const imagesHTML = renderImages(data);
             gallery.insertAdjacentHTML("beforeend", imagesHTML);
             loader.style.display = "none";
@@ -50,7 +72,7 @@ function onSubmit(e) {
             } else {
                 button.style.display = "block";
             }
-        })
+        }})
         .catch(error => {
             console.error('Fetch error:', error);
             loader.style.display = "none";
