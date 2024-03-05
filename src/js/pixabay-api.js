@@ -19,7 +19,7 @@ export async function fetchIcon(query) {
         `${BASE_URL}?${params}`
       );
       page +=1
-      console.log(response)
+      
       
       return { hits: response.data.hits, totalHits: response.data.totalHits };
       

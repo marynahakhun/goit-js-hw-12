@@ -26,7 +26,7 @@ function onSubmit(e) {
     button.style.display = "none";
 
     const query = form.elements['search'].value;
-    page += 1;
+    page = 1;
 
     fetchIcon(query)
         .then(data => {
@@ -55,26 +55,19 @@ function onSubmit(e) {
             const imagesHTML = renderImages(data);
             gallery.insertAdjacentHTML("beforeend", imagesHTML);
             loader.style.display = "none";
-            lightbox = initializeLightbox();
-            lightbox.refresh();
+            if (!lightbox) {
+                lightbox = initializeLightbox();
+            } else {
+                lightbox.refresh();
+            }
             const cardHeight = gallery.firstElementChild.getBoundingClientRect().height;
 
             window.scrollBy({ top: 2 * cardHeight, behavior: 'smooth' });
-
-            const totalImages = data.totalHits;
-            const totalPages = Math.ceil(totalImages / limit);
-            if (page > totalPages) {
-                button.style.display = "none";
-                return iziToast.error({
-                    position: "topRight",
-                    message: "We're sorry, there are no more images to load"
-                });
-            } else {
-                button.style.display = "block";
-            }
+            button.style.display = "block";
+            
         }})
         .catch(error => {
-            console.error('Fetch error:', error);
+           
             loader.style.display = "none";
             iziToast.error({
                 message: 'Fetch error. Please try again later.',
@@ -96,14 +89,17 @@ function loadMore() {
             const imagesHTML = renderImages(data);
             gallery.insertAdjacentHTML("beforeend", imagesHTML);
             loader.style.display = "none";
-            lightbox = initializeLightbox();
-            lightbox.refresh();
+            if (!lightbox) {
+                lightbox = initializeLightbox();
+            } else {
+                lightbox.refresh();
+            }
             const cardHeight = gallery.firstElementChild.getBoundingClientRect().height;
             window.scrollBy({ top: 2 * cardHeight, behavior: 'smooth' });
 
             const totalImages = data.totalHits;
             const totalPages = Math.ceil(totalImages / limit);
-            if (page > totalPages) {
+            if (page >= totalPages) {
                 button.style.display = "none";
                 return iziToast.error({
                     position: "topRight",
@@ -114,7 +110,7 @@ function loadMore() {
             }
         })
         .catch(error => {
-            console.error('Fetch error:', error);
+            
             loader.style.display = "none";
             iziToast.error({
                 message: 'Fetch error. Please try again later.',
