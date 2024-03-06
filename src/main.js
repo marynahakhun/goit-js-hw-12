@@ -37,7 +37,16 @@ function loadMore() {
 function fetchImages(query, page) {
     fetchIcon(query, page)
         .then(data => {
-            if (data.hits.length === 0) {
+            if (!query.trim()) {
+                iziToast.error({
+                    message: 'Заповніть це поле!',
+                    messageColor: '#FFFFFF',
+                    backgroundColor: '#B51B1B',
+                    position: 'topRight',
+                });
+                loader.style.display = "none";
+                return;
+            } else if (data.hits.length === 0) {
                 iziToast.error({
                     message: 'Sorry, there are no images matching your search query. Please try again!',
                     messageColor: '#FFFFFF',
@@ -46,15 +55,7 @@ function fetchImages(query, page) {
                 });
                 loader.style.display = "none";
                 return;
-            }      else if(!query.trim()){
-                iziToast.error({
-                    message: 'Заповніть це поле!',
-                    messageColor: '#FFFFFF',
-                    backgroundColor: '#B51B1B',
-                    position: 'topRight',
-                });
-                loader.style.display = "none";
-            }
+            } 
             else {
                 const imagesHTML = renderImages(data);
                 gallery.insertAdjacentHTML("beforeend", imagesHTML);

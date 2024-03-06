@@ -1,5 +1,5 @@
 import axios from 'axios';
-export const limit = 200
+export const limit = 15
 export let page = 1
 
     
