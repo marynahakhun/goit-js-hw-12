@@ -9,63 +9,75 @@ const loader = document.querySelector(".loader");
 const button = document.querySelector(".load-more");
 let lightbox;
 let page = 1;
-let currentQuery = ''; // Variable to store current query
+let prevQuery = '';
+let currentPage = 1
 
 form.addEventListener("submit", onSubmit);
 button.addEventListener("click", loadMore);
 
 function onSubmit(e) {
     e.preventDefault();
+    const query = form.elements['search'].value;
+
+    currentPage = page;
+    if (query !== prevQuery) {
+        page = 1; 
+        prevQuery = query; 
+    }
+
     gallery.innerHTML = "";
     loader.style.display = "block";
     button.style.display = "none";
 
-    const query = form.elements['search'].value;
-    currentQuery = query; 
-    page = 1;
-    form.reset()
     fetchImages(query, page);
+
+    form.reset();
 }
 
 function loadMore() {
     loader.style.display = "block";
     page += 1;
 
-    fetchImages(currentQuery, page);
+    if (page === currentPage + 1) {
+        fetchImages(prevQuery, page);
+    } else {
+        console.log("Страница була змінена перед завершенням попереднього запиту.");
+    }
 }
 
-function fetchImages(query, page) {
-    fetchIcon(query, page)
-        .then(data => {
-            if (!query.trim()) {
-                iziToast.error({
-                    message: 'Заповніть це поле!',
-                    messageColor: '#FFFFFF',
-                    backgroundColor: '#B51B1B',
-                    position: 'topRight',
-                });
-                loader.style.display = "none";
-                return;
-            } else if (data.hits.length === 0) {
-                iziToast.error({
-                    message: 'Sorry, there are no images matching your search query. Please try again!',
-                    messageColor: '#FFFFFF',
-                    backgroundColor: '#B51B1B',
-                    position: 'center',
-                });
-                loader.style.display = "none";
-                return;
-            } 
-            else {
-                const imagesHTML = renderImages(data);
-                gallery.insertAdjacentHTML("beforeend", imagesHTML);
-                loader.style.display = "none";
-                if (!lightbox) {
-                    lightbox = initializeLightbox();
-                } else {
-                    lightbox.refresh();
-                }
-                scroll();
+async function fetchImages(query, page) {
+    try {
+        const data = await fetchIcon(query, page);
+
+        if (!query.trim()) {
+            iziToast.error({
+                message: 'Заповніть це поле!',
+                messageColor: '#FFFFFF',
+                backgroundColor: '#B51B1B',
+                position: 'topRight',
+            });
+            loader.style.display = "none";
+            return;
+        } else if (data.hits.length === 0) {
+            iziToast.error({
+                message: 'Sorry, there are no images matching your search query. Please try again!',
+                messageColor: '#FFFFFF',
+                backgroundColor: '#B51B1B',
+                position: 'center',
+            });
+            loader.style.display = "none";
+            return;
+        } else {
+            const imagesHTML = renderImages(data);
+            gallery.insertAdjacentHTML("beforeend", imagesHTML);
+            loader.style.display = "none";
+            if (!lightbox) {
+                lightbox = initializeLightbox();
+            } else {
+                lightbox.refresh();
+            }
+            scroll();
+            currentPage = page;
             const totalImages = data.totalHits;
             const totalPages = Math.ceil(totalImages / limit);
             if (page >= totalPages) {
@@ -77,17 +89,16 @@ function fetchImages(query, page) {
             } else {
                 button.style.display = "block";
             }
-            }
-        })
-        .catch(error => {
-            loader.style.display = "none";
-            iziToast.error({
-                message: 'Fetch error. Please try again later.',
-                messageColor: '#FFFFFF',
-                backgroundColor: '#B51B1B',
-                position: 'center',
-            });
+        }
+    } catch (error) {
+        loader.style.display = "none";
+        iziToast.error({
+            message: 'Fetch error. Please try again later.',
+            messageColor: '#FFFFFF',
+            backgroundColor: '#B51B1B',
+            position: 'center',
         });
+    }
 }
 
 function scroll() {
